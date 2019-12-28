@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import re
 from typing import Dict, List, Any
+from pcr_analysis import custom_config
 
 UN_NUM_PTN = re.compile(r'[^\d]')
 
@@ -59,6 +60,7 @@ class Analysis:
                 name = ''
             else:
                 name = Analysis._remove_symbol(item['itemstring'])
+                name = custom_config.parse_team_name(name)
 
     def parse_boss_name(self):
         for item in self.item_list:
@@ -66,7 +68,8 @@ class Analysis:
                 continue
             if not Analysis.INT_PTN.search(item['itemstring']):
                 boss_name = item['itemstring']
-                self.boss_name = Analysis._remove_symbol(boss_name)
+                boss_name = Analysis._remove_symbol(boss_name)
+                self.boss_name = custom_config.parse_boss_name(boss_name)
                 break
         else:
             raise ValueError('未找到boss名')
