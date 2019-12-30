@@ -8,18 +8,19 @@ UN_NUM_PTN = re.compile(r'[^\d]')
 
 
 class Damage:
-    def __init__(self, boss: str, round: str, name: str, damage: int):
+    def __init__(self, boss: str, round: str, name: str, damage: int, boss_day: int):
         self.boss = boss
         self.round = round
         self.name = name
         self.damage = damage
+        self.boss_day = boss_day
 
     @property
     def boss_key(self) -> str:
-        return self.round + '-' + self.boss
+        return str(self.boss_day) + '-' + self.round + '-' + self.boss
 
     def __str__(self):
-        return f'{self.round}-{self.boss} `{self.name}` {self.damage}'
+        return f'{self.boss_day} {self.round}-{self.boss} `{self.name}` {self.damage}'
 
 
 class Analysis:
@@ -33,11 +34,13 @@ class Analysis:
 
         self.boss_name: str = ''
         self.round: str = ''
+        self.boss_day: int = 0
         self.damage_list: List[Damage] = []
 
     def parse(self) -> List[Damage]:
         self.parse_boss_name()
         self.parse_round()
+        self.parse_time()
         self.parse_damage_list()
 
         return self.damage_list
@@ -56,7 +59,7 @@ class Analysis:
                 if not name:
                     continue
                 damage = Analysis._parse_damage_num(item['itemstring'])
-                self.damage_list.append(Damage(self.boss_name, self.round, name, damage))
+                self.damage_list.append(Damage(self.boss_name, self.round, name, damage, self.boss_day))
                 name = ''
             else:
                 name = Analysis._remove_symbol(item['itemstring'])
@@ -82,6 +85,9 @@ class Analysis:
             break
         else:
             raise ValueError('未找到周目')
+
+    def parse_time(self):
+        self.boss_day = custom_config.get_boss_time(self.round, self.boss_name)
 
     @staticmethod
     def _parse_damage_num(s):
